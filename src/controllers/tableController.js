@@ -284,10 +284,21 @@ exports.previewCheckout = async (req, res) => {
 
         const grandTotal = hourlyCharge + orderTotal;
 
+        // Format startTime as local time string to avoid timezone conversion issues
+        const startTimeDate = new Date(session.startTime);
+        const startYear = startTimeDate.getFullYear();
+        const startMonth = String(startTimeDate.getMonth() + 1).padStart(2, '0');
+        const startDay = String(startTimeDate.getDate()).padStart(2, '0');
+        const startHour = String(startTimeDate.getHours()).padStart(2, '0');
+        const startMinute = String(startTimeDate.getMinutes()).padStart(2, '0');
+        const startSecond = String(startTimeDate.getSeconds()).padStart(2, '0');
+        const startTimeString = `${startYear}-${startMonth}-${startDay}T${startHour}:${startMinute}:${startSecond}`;
+
         // Return preview WITHOUT ending session
         res.json({
             session: {
                 ...session,
+                startTime: startTimeString, // Use formatted local time string
                 totalHours,
                 hourlyCharge,
             },
@@ -297,6 +308,7 @@ exports.previewCheckout = async (req, res) => {
                 hourlyRate: table.hourlyRate,
                 totalHours,
             },
+            orders: session.orders, // Include orders at root level for easy access
             orderTotal,
             hourlyCharge,
             grandTotal,
@@ -380,8 +392,21 @@ exports.checkout = async (req, res) => {
             data: { status: 'EMPTY' },
         });
 
+        // Format startTime as local time string to avoid timezone conversion issues
+        const startTimeDate = new Date(session.startTime);
+        const startYear = startTimeDate.getFullYear();
+        const startMonth = String(startTimeDate.getMonth() + 1).padStart(2, '0');
+        const startDay = String(startTimeDate.getDate()).padStart(2, '0');
+        const startHour = String(startTimeDate.getHours()).padStart(2, '0');
+        const startMinute = String(startTimeDate.getMinutes()).padStart(2, '0');
+        const startSecond = String(startTimeDate.getSeconds()).padStart(2, '0');
+        const startTimeString = `${startYear}-${startMonth}-${startDay}T${startHour}:${startMinute}:${startSecond}`;
+
         res.json({
-            session: updatedSession,
+            session: {
+                ...updatedSession,
+                startTime: startTimeString, // Use formatted local time string
+            },
             hourlyCharge,
             orderTotal,
             grandTotal: hourlyCharge + orderTotal,
