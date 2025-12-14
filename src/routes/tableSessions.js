@@ -11,18 +11,49 @@ router.use(authMiddleware);
 // Get completed sessions for reporting
 router.get('/completed', async (req, res) => {
     try {
+        const { startDate, endDate } = req.query;
+
+        const where = {
+            endTime: {
+                not: null,
+            },
+        };
+
+        // Add date filter if provided
+        if (startDate || endDate) {
+            where.endTime = {
+                not: null,
+            };
+            if (startDate) {
+                where.endTime.gte = new Date(startDate);
+            }
+            if (endDate) {
+                // Include the entire end date (set to end of day)
+                const endDateTime = new Date(endDate);
+                endDateTime.setHours(23, 59, 59, 999);
+                where.endTime.lte = endDateTime;
+            }
+        }
 
         const sessions = await prisma.tableSession.findMany({
-            where: {
-                endTime: {
-                    not: null,
-                },
-            },
+            where,
             include: {
                 table: {
                     select: {
                         id: true,
                         name: true,
+                    },
+                },
+                orders: {
+                    where: {
+                        status: 'COMPLETED',
+                    },
+                    include: {
+                        items: {
+                            include: {
+                                dish: true,
+                            },
+                        },
                     },
                 },
             },

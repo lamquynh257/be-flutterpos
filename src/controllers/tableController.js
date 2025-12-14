@@ -96,10 +96,32 @@ exports.getById = async (req, res) => {
             }).catch(err => console.error('Error syncing table status:', err));
         }
 
-        res.json({
+        // Format startTime as local time string to avoid timezone conversion issues
+        const formattedTable = {
             ...table,
             status: correctStatus,
-        });
+        };
+
+        // Format session startTime if exists
+        if (formattedTable.sessions && formattedTable.sessions.length > 0) {
+            formattedTable.sessions = formattedTable.sessions.map(session => {
+                const startTimeDate = new Date(session.startTime);
+                const startYear = startTimeDate.getFullYear();
+                const startMonth = String(startTimeDate.getMonth() + 1).padStart(2, '0');
+                const startDay = String(startTimeDate.getDate()).padStart(2, '0');
+                const startHour = String(startTimeDate.getHours()).padStart(2, '0');
+                const startMinute = String(startTimeDate.getMinutes()).padStart(2, '0');
+                const startSecond = String(startTimeDate.getSeconds()).padStart(2, '0');
+                const startTimeString = `${startYear}-${startMonth}-${startDay}T${startHour}:${startMinute}:${startSecond}`;
+                
+                return {
+                    ...session,
+                    startTime: startTimeString, // Use formatted local time string
+                };
+            });
+        }
+
+        res.json(formattedTable);
     } catch (error) {
         console.error('Get table error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -242,6 +264,7 @@ exports.previewCheckout = async (req, res) => {
                     where: { endTime: null },
                     include: {
                         orders: {
+                            where: { status: 'PENDING' }, // CHỈ lấy PENDING orders (bỏ qua CANCELLED)
                             include: {
                                 items: {
                                     include: { dish: true },
