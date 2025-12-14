@@ -31,6 +31,7 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/table-sessions', require('./routes/tableSessions'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/store-settings', require('./routes/storeSettings'));
 
 // Health check
 app.get('/health', (req, res) => {

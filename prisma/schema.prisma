@@ -63,9 +63,9 @@ enum TableStatus {
 
 // Category model for menu organization
 model Category {
-  id     Int     @id @default(autoincrement())
-  name   String  @db.VarChar(100)
-  order  Int     @default(0) // Display order
+  id     Int    @id @default(autoincrement())
+  name   String @db.VarChar(100)
+  order  Int    @default(0) // Display order
   dishes Dish[]
 
   @@map("categories")
@@ -73,13 +73,13 @@ model Category {
 
 // Dish model - menu items
 model Dish {
-  id         Int         @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   categoryId Int
-  name       String      @db.VarChar(200)
+  name       String   @db.VarChar(200)
   price      Float
-  image      String?     @db.Text // URL or base64
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  image      String?  @db.Text // URL or base64
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
@@ -109,14 +109,14 @@ model TableSession {
 
 // Order model - customer orders
 model Order {
-  id             Int          @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   tableSessionId Int?
   tableId        Int
-  status         OrderStatus  @default(PENDING)
-  total          Float        @default(0)
-  discountRate   Float        @default(1.0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  status         OrderStatus @default(PENDING)
+  total          Float       @default(0)
+  discountRate   Float       @default(1.0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   tableSession TableSession? @relation(fields: [tableSessionId], references: [id], onDelete: SetNull)
   table        Table         @relation(fields: [tableId], references: [id], onDelete: Cascade)
@@ -152,12 +152,12 @@ model OrderItem {
 
 // Payment model - payment records
 model Payment {
-  id             Int       @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   orderId        Int?
   tableSessionId Int?
   amount         Float
-  method         String    @default("CASH") @db.VarChar(50)
-  paidAt         DateTime  @default(now())
+  method         String   @default("CASH") @db.VarChar(50)
+  paidAt         DateTime @default(now())
 
   order        Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
   tableSession TableSession? @relation(fields: [tableSessionId], references: [id], onDelete: SetNull)
@@ -165,4 +165,16 @@ model Payment {
   @@index([orderId])
   @@index([tableSessionId])
   @@map("payments")
+}
+
+// StoreSettings model - store information for receipts
+model StoreSettings {
+  id           Int      @id @default(autoincrement())
+  storeName    String   @db.VarChar(200)
+  storeAddress String?  @db.VarChar(500)
+  storePhone   String?  @db.VarChar(50)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("store_settings")
 }
